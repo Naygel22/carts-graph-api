@@ -1,11 +1,12 @@
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { calculateDiscountPrice } from '../formatters/calculateDiscountPrice';
 
 export const Chart = ({ data }) => {
 
   const chartData = data.products.map((product, index) => ({
     name: `Produkt ${index + 1}`,
     price: product.price,
-    discountedPrice: (product.price * (100 - product.discountPercentage) / 100).toFixed(2),
+    discountedPrice: calculateDiscountPrice(product.price, product.discountPercentage),
   }));
 
   return (

@@ -4,6 +4,7 @@ import { getCartById } from '../api/getCartById';
 import { Chart } from './Chart';
 import { useState } from 'react';
 import { deleteCartById } from '../api/deleteCartById';
+import { calculateDiscountPrice } from '../formatters/calculateDiscountPrice';
 
 export const CartId = () => {
   const params = useParams();
@@ -13,7 +14,8 @@ export const CartId = () => {
 
   const { data, isLoading, error } = useQuery({
     queryKey: ['cartId', params.id],
-    queryFn: () => getCartById(params.id)
+    queryFn: () => getCartById(params.id!),
+    enabled: !!params.id
   });
 
   const mutation = useMutation({
@@ -31,12 +33,16 @@ export const CartId = () => {
   });
 
   const handleDelete = () => {
-    mutation.mutate(params.id);
+    if (params.id) {
+      mutation.mutate(params.id);
+    }
   };
 
   const handleShowChart = () => {
     setShowChart(!showChart);
   };
+
+  const handleGoBack = () => navigate('/')
 
   if (isLoading) {
     return <p>Loading...</p>;
@@ -54,13 +60,13 @@ export const CartId = () => {
       <ul>
         {data.products.map(product => (
           <li key={product.id}>
-            {product.title} - <b>Cena:</b> {product.price}, <b>Cena po rabacie:</b> {(product.price * (100 - product.discountPercentage)).toFixed(2)} PLN
+            {product.title} - <b>Cena:</b> {product.price}, <b>Cena po rabacie:</b> {calculateDiscountPrice(product.price, product.discountPercentage)} PLN
           </li>
         ))}
       </ul>
-      <button onClick={() => navigate('/')}>Back</button>
+      <button onClick={handleGoBack}>Back</button>
       <button onClick={handleShowChart}>
-        {showChart ? 'Hide Graph' : 'Show Graph'}
+        {showChart ? 'Hide' : 'Show'}{' '}Graph
       </button>
       <button onClick={handleDelete}>Delete cart</button>
       {showChart && <Chart data={data} />}
